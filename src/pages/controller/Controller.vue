@@ -40,6 +40,7 @@
                     <MenuItem name="3-1">Option 1</MenuItem>
                     <MenuItem name="3-2">Option 2</MenuItem>
                 </Submenu>
+				<MenuItem name="test">Option 2</MenuItem>
             </Menu>
         </Sider>
         <Layout :style="{marginLeft: '200px'}">

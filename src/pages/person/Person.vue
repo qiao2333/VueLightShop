@@ -10,8 +10,8 @@
 								用户名:{{user.userName}}<br />
 								用户类型:{{user.userType}}<br />
 							</Card>
-							<LightInfo @notify="showNotice" :userinfo="userinfo"></LightInfo>
-							<AddressInfo @notify="showNotice"></AddressInfo>
+							<LightInfo @tip="tip" :userinfo="userinfo"></LightInfo>
+							<AddressInfo @tip="tip"></AddressInfo>
 						</Col>
 						<Col span="12">
 							<Header :imagepath="path" />
@@ -89,23 +89,35 @@
 					}
 				})
 			},
-			showNotice (ok,text) {
-				if(ok){
-					this.$Notice.success({
-					    title: '成功',
-					    desc: text
-					});
-					this.reload = true
-					this.fetch()
-					this.reload = false
-				}else{
-					this.$Notice.errpr({
-					    title: '失败',
-					    desc: text
-					});
+			tip(data){
+				switch (data.type){
+					case "error":{
+						this.$Notice.error({
+							title:"错误",
+							desc:data.text
+						})
+					};break;
+					case "success":{
+						this.$Notice.success({
+							title:"成功",
+							desc:data.text
+						})
+					};break;
+					case "info":{
+						this.$Notice.info({
+							title:"消息",
+							desc:data.text
+						})
+					};break;
+					case "warning":{
+						this.$Notice.warning({
+							title:"警告",
+							desc:data.text
+						})
+					};break;
 				}
-                
-            }
+				
+			}
 		},
     }
 

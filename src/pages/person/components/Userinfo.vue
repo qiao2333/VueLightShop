@@ -70,12 +70,12 @@
 					data:this.formItem
 				})).then((res)=>{
 					if (res.data.code == 0){
-						this.$emit("notify",true,"修改成功")
+						this.$emit("tip",{type:"success",text:"修改成功"})
 					}else{
-						this.$emit("notfiy",false,"修改失败")
+						this.$emit("tip",{type:"error",text:"修改失败"})
 					}
 				}).catch((err)=>{
-					this.$emit("notify",false,"出现未知错误" + err)
+					this.$emit("tip",{type:"error",text:"出现未知错误"})
 				})
 			},
 			cancel(){

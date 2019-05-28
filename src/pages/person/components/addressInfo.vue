@@ -8,9 +8,15 @@
 				</Button>
 				<template v-for="(item, index) in addresses">
 					<Card :key="index">
-						<Button slot="extra" @click="UpdateAddress(item)">
-							修改
-						</Button>
+						<ButtonGroup slot="extra">
+							<Button  @click="UpdateAddress(item)">
+								修改
+							</Button>
+							<Button  @click="DeleteAddress(item,index)">
+								删除
+							</Button>
+						</ButtonGroup>
+						
 						{{item.state + "/" + item.city + "/" + item.area + "/" + item.street}}<br />
 						说明:{{item.content}}
 					</Card>
@@ -63,12 +69,12 @@
 						addresses: value,
 					})).then((res)=>{
 						if(res.data.code == 0){
-							this.$emit("notify",true,"添加成功")
+							this.$emit("tip",{type:"success",text:"添加成功"})
 						}else{
-							this.$emit("notify",false,"添加失败")
+							this.$emit("tip",{type:"error",text:"添加失败"})
 						}
 					}).catch((err)=>{
-						this.$emit("notify",false,"出现未知错误" + err)
+						this.$emit("tip",{type:"warning",text:"出现未知错误"})
 					})
 				}else{
 					await this.$axios.post("/user/UpdateUserAddress", this.$qs.stringify({
@@ -77,12 +83,12 @@
 						code: this.formItem.code
 					})).then( (res)=>{
 						if(res.data.code == 0){
-							this.$emit("notify",true,"修改成功")
+							this.$emit("tip",{type:"success",text:"修改成功"})
 						}else{
-							this.$emit("notify",false,"修改失败")
+							this.$emit("tip",{type:"error",text:"修改失败"})
 						}
 					}).catch((err)=>{
-						this.$emit("notify",false,"出现未知错误" + err)
+						this.$emit("tip",{type:"warning",text:"出现未知错误"})
 						
 					})
 				}
@@ -119,6 +125,18 @@
 				this.formItem.address = addressArray
 				this.formItem.content = value.content
 				this.showModal = true
+			},
+			DeleteAddress(item,index){
+				this.$axios.get("/user/deleteUserAddress/" + item.code).then((res)=>{
+					if (res.data.code == 0){
+						this.$emit("tip",{type:"success",text:"删除成功"})
+						this.addresses.splice(index,1)
+					}else{
+						this.$emit("tip",{type:"error",text:"修改失败"})
+					}
+				}).catch((err)=>{
+					this.$emit("tip",{type:"warning",text:"出现未知错误"})
+				})
 			},
 			AddAddress(){
 				this.formload = true
