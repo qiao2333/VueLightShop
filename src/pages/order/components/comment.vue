@@ -12,14 +12,14 @@
 			</Card>
 			<Card title="商品列表">
 				<ButtonGroup slot="extra">
-					<Button type="primary" @click="ignot">评论</Button>
-					<Button type="error" @click="comit">忽略</Button>
+					<Button type="primary" @click="comit">评论</Button>
+					<Button type="error" @click="ignot">忽略</Button>
 				</ButtonGroup>
 				<Card v-for="(item, index)  in shoplist" :key="index">
 					<Row>
 						<Col span="4">
 						<a :href="'/#/home/info/' + item.lightCode">
-							<Picture :path="item.path" :headertype="3" />
+							<Picture :myStyle="'height:100px;width:100px'" :path="item.path" :type="'light'" :headertype="2" />
 							{{item.lightName}}
 						</a>
 						</Col>
@@ -63,7 +63,6 @@
 			}
 		},
 		mounted() {
-			console.log(this.row)
 			this.fetch(this.row.code, this.row.addressCode)
 		},
 		methods: {
@@ -73,6 +72,7 @@
 						console.log(res.data)
 						this.address = res.data.data1[0]
 						this.shoplist = res.data.data2
+						console.log("fuck")
 						this.load = false
 					}
 				}).catch((err) => {
@@ -91,6 +91,8 @@
 						codes.push(this.shoplist[i].lightCode)
 					}
 				}
+				console.log(codes)
+				console.log(comments)
 				this.comment(codes,comments)
 			},
 			comment(codes,comments){

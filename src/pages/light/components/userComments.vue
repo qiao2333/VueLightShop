@@ -7,7 +7,7 @@
 					<p slot="title">{{item.userName}}</p>
 					<Row>
 						<Col span="5">
-							<Picture :headertype="1" :path="item.path" ></Picture>
+							<Picture :headertype="1" :type="'user'" :path="item.path" ></Picture>
 						</Col>
 						<Col span="18" offset="1">
 							{{item.comments}}

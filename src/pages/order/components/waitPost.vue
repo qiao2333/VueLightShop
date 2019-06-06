@@ -4,7 +4,7 @@
 			<Spin />
 		</div>
 		<div v-else >
-			<Scroll :height="1000" @on-reach-bottom="handleBottom">
+			<Scroll :height="500" :on-reach-bottom="handleBottom">
 				<Table border ref="selection" :columns="columns" :data="data">
 				</Table>
 			</Scroll>

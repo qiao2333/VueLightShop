@@ -9,7 +9,7 @@
 							<Row>
 								<Col span="4">
 								<a :href="'/#/home/info/' + item.lightCode">
-									<Picture :path="item.path" :headertype="3" />
+									<Picture :myStyle="'height:120px;width:120px'" :path="item.path" :type="'light'" :headertype="2" />
 									{{item.lightName}}
 								</a>
 								</Col>

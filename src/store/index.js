@@ -29,6 +29,9 @@ export default new Vuex.Store({
     },
 		getHeader: state =>{
 			return state.userHeader
+		},
+		getType: state=>{
+			return state.userType
 		}
     
   }

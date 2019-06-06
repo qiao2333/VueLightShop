@@ -4,12 +4,12 @@
 			<Spin />
 		</div>
 		<div v-else>
-			<Button type="error" @click="deleteOrders">删除</Button>
-			<Scroll :height="1000" :on-reach-bottom="handleBottom">
+			<Button :disabled="disable" type="error" @click="deleteOrders">删除</Button>
+			<Scroll :height="500" :on-reach-bottom="handleBottom">
 				<Table @on-selection-change="selectionChange" border ref="selection" :columns="columns" :data="data">
 					<span slot="action" slot-scope="{row, column, index}">
-						<Button type="default" @click="pay(row.code)" size="small">付款</Button>
-						<Button type="error" @click="deleteOrder(index,row.code)" size="small">删除订单</Button>
+						<Button :disabled="disable" type="default" @click="pay(row.code)" size="small">付款</Button>
+						<Button :disabled="disable"  type="error" @click="deleteOrder(index,row.code)" size="small">删除订单</Button>
 					</span>
 				</Table>
 			</Scroll>
@@ -23,6 +23,7 @@
 		data() {
 			return {
 				load: true,
+				disable:false,
 				postTypes: ["顺丰", "圆通", "韵达"],
 				columns: [{
 						type: 'selection',
@@ -60,7 +61,9 @@
 				],
 				data: [],
 				page: 0,
+				time:null,
 				selects: [],
+				haspay:false
 			}
 		},
 		components: {
@@ -68,6 +71,13 @@
 		},
 		mounted() {
 			this.fetch(0, this.page)
+		},
+		watch: {
+			haspay(newValue, oldValue) {
+				if (newValue == true){
+					window.clearInterval(this.time)
+				}
+			}
 		},
 		methods: {
 			fetch(type, page) {
@@ -81,9 +91,11 @@
 				})
 			},
 			pay(code) {
+				this.disable = true
 				this.$axios.post("/pay/repay/" + code).then((res) => {
 					if (res.data.code == 0) {
-						window.open(res.data.url)
+						this.$emit("tip",{type:"success",text:"正在打开支付页面"})
+						this.checkpayStart(res.data.alipayUrl,res.data.orderCode)
 					}
 				}).catch((err) => {
 					console.log(err)
@@ -91,6 +103,27 @@
 			},
 			selectionChange(data) {
 				this.selects = data
+			},
+			checkpayStart(alipayUrl,orderCode){
+				var fuc = (orderCode, fuck)=> {
+					console.log("检查中")
+					this.$axios.get("/user/checkpay/" + orderCode).then((res) => {
+						if (res.data.code == 1) {
+							this.$emit("tip", {
+								type: "success",
+								text: "支付成功"
+							})
+							fuck.disabled = false
+							window.clearInterval(fuck.time)
+						}
+					}).catch((err) => {
+						console.log(err)
+					})
+				};
+				setTimeout((alipayUrl) => {
+					window.open(alipayUrl)
+				}, 3000, alipayUrl)
+				this.time = window.setInterval(fuc, 5000, orderCode, this)
 			},
 			deleteOrders() {
 				if (this.selects.length == 0) {

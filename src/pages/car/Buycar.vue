@@ -12,7 +12,7 @@
 			<div v-else>
 				<Table @on-selection-change="selection" ref="table1" border :columns="columns" :data="data">
 					<template slot-scope="{ row, index }" slot="shop">
-						<Picture :path="row.path" :headertype="3"></Picture>
+						<Picture :myStyle="'height:100px;width:100px'"  :type="'light'" :path="row.path" :headertype="2" />
 						<p>{{row.lightName}}</p>
 					</template>
 					<template slot-scope="{ row, index }" slot="numbers">
@@ -43,6 +43,7 @@
 <script>
 	import Picture from '@/pages/components/Picture'
 	export default {
+		name:"BuyCarUnKeep",
 		components: {
 			Picture,
 		},
@@ -111,7 +112,7 @@
 					indices: false
 				})).then((res)=>{
 					if (res.data.code == 0){
-						console.log("ok")
+						this.$emit("tip",{type:"success",text:"删除成功"})
 					}
 				}).catch((err)=>{
 					console.log(err)
@@ -121,8 +122,8 @@
 				this.$refs.table1.selectAll(false)
 			},
 			//axios获取购物车数据
-			getCars(page) {
-				this.$axios.post("/user/getCars/" + page).then((res) => {
+			getCars() {
+				this.$axios.post("/user/getCars").then((res) => {
 					var data = res.data.datas
 					var numberses = new Array()
 					for (var i = 0; i < data.length; i++) {

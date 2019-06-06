@@ -1,11 +1,18 @@
 <template>
-	<div>
-		<Input v-model="searchMessage.search" search @on-search="search" />
-		<Scroll :on-reach-bottom="handleReachBottom">
+	<div style="margin-top: 5px;">
+		<Row>
+			<Col span="4">
+				<Input label="根据名字搜索" clearable  v-model="searchMessage.search" search @on-search="search" />
+			</Col>
+			<Col offset="16" span="4">
+				<Button to="/controller/addLight">添加灯饰</Button>
+			</Col>
+		</Row>
+		<Scroll :height="500" :on-reach-bottom="handleReachBottom">
 			<Table :loading="loading" :columns="columns1" :data="data1">
 				<template slot-scope="{ row, index }" slot="action">
-					<Button type="primary" size="small" style="margin-right: 5px" @click="show(index)">修改</Button>
-					<Button type="error" size="small" @click="handledelete(index)">删除</Button>
+					<Button type="primary" size="small" style="margin-right: 5px" @click="update(index,row)">修改</Button>
+					<Button type="error" size="small" @click="handledelete(index,row)">删除</Button>
 				</template>
 			</Table>
 		</Scroll>
@@ -14,6 +21,7 @@
 
 <script>
 	export default {
+		name:'ControllerLight',
 		data() {
 			return {
 				loading: false,
@@ -112,12 +120,22 @@
 					console.log(err)
 				})
 			},
-			handledelete(value) {
+			handledelete(index,row) {
+				this.$axios.get("/controller/light/delete/" + row.code).then((res)=>{
+					if (res.data.code == 0){
+						this.$emit("tip",{type:"success",text:"删除成功"})
+						this.data1.splice(index,1)
+					}else{
+						this.$emit("tip",{type:"error",text:"删除失败"})
+					}
+				}).catch((err)=>{
+					this.$emit("tip",{type:"warning",text:"发生未知错误"})
+				})
 				
-				alert(this.data1[value].code)
 			},
-			show(){
-				
+			update(index, row){
+				row.code
+				this.$router.push({path:"/controller/updateLight",query:{code:row.code}})
 			}
 		},
 	}

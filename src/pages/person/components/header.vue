@@ -3,7 +3,7 @@
 		<Spin v-if="load" />
 		<div v-else>
 			<Card style="text-align: center;">
-				<Picture ref="Picture" :headertype="2" :path="path" />
+				<Picture ref="Picture" :type="'user'" :headertype="2" :path="path" />
 				<Button type="primary" @click="changeImage">修改</Button>
 			</Card>
 			<Modal v-model="showModal" :loading="loading" @on-ok="ok" @on-cancel="cancel">

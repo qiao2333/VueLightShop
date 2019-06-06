@@ -34,6 +34,7 @@
 	import waitPost from './components/waitPost'
 	
 	export default {
+		name:"OrderUnKeep",
 		components: {
 			finish,
 			waitReceive,

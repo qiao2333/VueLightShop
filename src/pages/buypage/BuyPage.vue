@@ -4,8 +4,8 @@
 			<Table ref="table" :columns="columns1" :data="data1">
 				<template slot-scope="{ row, index }" slot="shop">
 					<div>
-						<Picture :path="row.path" :headertype="3" />
-						<p>row.lightName</p>
+						<Picture :myStyle="'height:100px;width:100px'"  :type="'light'" :path="row.path" :headertype="2" />
+						<p>{{row.lightName}}</p>
 					</div>
 				</template>
 				<template slot-scope="{ row, index }" slot="totalPrice">
@@ -34,7 +34,7 @@
 			</Form>
 			<p>邮寄费用：{{orderinfo.PostFee}}</p>
 			<h1>总价：{{total}}</h1>
-			<Button type="primary" @click="buy">购买</Button>
+			<Button :disabled="disabled" type="primary" @click="buy">购买</Button>
 		</Card>
 	</div>
 </template>
@@ -42,6 +42,7 @@
 <script>
 	import Picture from '@/pages/components/Picture'
 	export default {
+		name: "BuyPageUnKeep",
 		data() {
 			return {
 				columns1: [{
@@ -68,15 +69,18 @@
 					}
 				],
 				orderinfo: {
-					totalPrice:0,
+					totalPrice: 0,
 					PostFee: 0,
-					PostType:"0",
-					addressCode:"",
+					PostType: "",
+					addressCode: "",
 				},
+				disabled: false,
 				codes: [],
 				data1: [],
 				addressloading: true,
-				addressOptions:[],
+				addressOptions: [],
+				time:null,
+				haspay:false
 			}
 		},
 		components: {
@@ -85,37 +89,51 @@
 		async mounted() {
 			var codes = this.$route.query.codes
 			var numbers = this.$route.query.numbers
-			await this.getData(codes,numbers)
+			await this.getData(codes, numbers)
 			this.totalPrice()
 			this.getAddress()
 		},
 		computed: {
-			total(){
+			total() {
 				return (this.orderinfo.PostFee + this.orderinfo.totalPrice).toFixed(2)
 			}
 		},
+		watch: {
+			haspay(newValue, oldValue) {
+				if (newValue == true){
+					window.clearInterval(this.time)
+					this.disabled = false
+				}
+			}
+		},
 		methods: {
-			changePostType(value){
-				switch(value){
-					case "1": this.orderinfo.PostFee = 35; break;
-					case "2": this.orderinfo.PostFee = 20; break;
-					case "3": this.orderinfo.PostFee = 15; break;
+			changePostType(value) {
+				switch (value) {
+					case "1":
+						this.orderinfo.PostFee = 35;
+						break;
+					case "2":
+						this.orderinfo.PostFee = 20;
+						break;
+					case "3":
+						this.orderinfo.PostFee = 15;
+						break;
 				}
 			},
 			totalPrice() {
 				var totalPrice = 0
 				var data = this.data1
-				for (var i = 0; i < data.length; i++){
+				for (var i = 0; i < data.length; i++) {
 					totalPrice += data[i].lightPrice * data[i].number
 				}
 				this.orderinfo.totalPrice = totalPrice
 			},
-			getAddress(){
+			getAddress() {
 				this.$axios.get("/user/UserAddressInfo").then((res) => {
 					if (res.data.code == 0) {
 						const data = res.data.datas
 						var arr = new Array()
-						for(var i = 0; i < data.length; i++){
+						for (var i = 0; i < data.length; i++) {
 							var obj = new Object()
 							obj.label = data[i].state + data[i].city + data[i].area + data[i].street
 							obj.value = data[i].code
@@ -128,7 +146,7 @@
 					console.log(err)
 				})
 			},
-			async getData(codes,numbers) {
+			async getData(codes, numbers) {
 				await this.$axios.post("/user/buypage", this.$qs.stringify({
 					codes: codes
 				}, {
@@ -136,7 +154,7 @@
 				})).then((res) => {
 					const data = res.data.datas
 					var datas = new Array()
-					for(var i = 0; i < data.length; i++){
+					for (var i = 0; i < data.length; i++) {
 						var obj = new Object()
 						obj.lightName = data[i].lightName
 						obj.code = data[i].code
@@ -152,31 +170,71 @@
 					console.log(err)
 				})
 			},
-			buy(){
+			buy() {
+				if (this.orderinfo.addressCode == "") {
+					this.$emit("tip", {
+						type: "info",
+						text: "请选择送货地址"
+					})
+					return
+				}
+				if (this.orderinfo.PostType == "") {
+					this.$emit("tip", {
+						type: "info",
+						text: "请选择邮寄方式"
+					})
+					return
+				}
+				this.disabled = true
 				var lightCode = new Array()
 				var Numbers = new Array()
-				for (var i = 0; i < this.data1.length; i++){
+				for (var i = 0; i < this.data1.length; i++) {
 					lightCode.push(this.data1[i].code)
-					Numbers.push( this.data1[i].number)
+					Numbers.push(this.data1[i].number)
 				}
 				this.$axios.post("/pay/zhifu", this.$qs.stringify({
-					lightCode:lightCode,
-					Numbers:Numbers,
-					total:this.orderinfo.totalPrice,
+					lightCode: lightCode,
+					Numbers: Numbers,
+					total: (this.orderinfo.totalPrice).toFixed(2),
 					postType: this.orderinfo.PostType,
-					postFee: this.orderinfo.PostFee,
+					postFee: (this.orderinfo.PostFee).toFixed(2),
 					addressCode: this.orderinfo.addressCode
 				}, {
 					indices: false
-				})).then((res)=>{
-					console.log(res)
-					if (res.data.code == 0){
-						window.open(res.data.alipayUrl)
+				})).then((res) => {
+					if (res.data.code == 0) {
+						this.$emit("tip", {
+							type: "success",
+							text: "正在打开支付页面"
+						})
+						this.checkpayStart(res.data.alipayUrl, res.data.orderCode)
 					}
-				}).catch((err)=>{
+				}).catch((err) => {
 					console.log(err)
 				})
-			}
+			},
+			checkpayStart(alipayUrl, orderCode) {
+				this.haspay = false
+				var fuc = (orderCode, fuck)=> {
+					console.log("检查中")
+					this.$axios.get("/user/checkpay/" + orderCode).then((res) => {
+						if (res.data.code == 1) {
+							this.$emit("tip", {
+								type: "success",
+								text: "支付成功"
+							})
+							fuck.haspay = true
+						}
+					}).catch((err) => {
+						console.log(err)
+					})
+				};
+				setTimeout((alipayUrl) => {
+					window.open(alipayUrl)
+				}, 3000, alipayUrl)
+				this.time = window.setInterval(fuc, 5000, orderCode, this)
+			},
+
 		},
 	}
 </script>

@@ -7,15 +7,15 @@
 			<Card title="邮递信息">
 				<h1>地址:{{address.address}}</h1>
 				<h2>详细:{{address.content}}</h2>
-				<h2>邮寄类型:{{row.postType}}</h2>
-				<h2>邮寄费用:{{row.postFee}}</h2>
+				<h2>邮寄类型:{{row.PostType}}</h2>
+				<h2>邮寄费用:{{row.PostFee}}</h2>
 			</Card>
 			<Card title="商品列表">
 				<Card v-for="(item, index)  in shoplist" :key="index">
 					<a :href="'/#/home/info/' + item.lightCode">
 						<Row>
 							<Col span="4">
-							<Picture :myStyle="'height:100px;width:100px'" :path="item.path" :type="'light'" :headertype="2" />
+							<Picture :path="item.path" :type="'light'" :headertype="3" />
 							{{item.lightName}}
 							</Col>
 							<Col span="4">
@@ -54,12 +54,11 @@
 			}
 		},
 		mounted() {
-			console.log(this.row)
-			this.fetch(this.row.code, this.row.addressCode)
+			this.fetch(this.row.Code, this.row.AddressCode,this.row.UserCode)
 		},
 		methods: {
-			fetch(code, addressCode) {
-				this.$axios.get("/user/OrderInfo/" + code + "/" + addressCode).then((res)=>{
+			fetch(code, addressCode,userCode) {
+				this.$axios.get("/controller/orderInfo/" + addressCode + "/" + userCode + "/" + code).then((res)=>{
 					if (res.data.code == 0){
 						console.log(res.data)
 						this.address = res.data.data1[0]

@@ -1,5 +1,5 @@
 <style scoped>
-    .layout{
+	.layout{
         border: 1px solid #d7dde4;
         background: #f5f7f9;
         position: relative;
@@ -12,65 +12,145 @@
     }
 </style>
 <template>
-    <div class="layout">
-        <Sider :style="{position: 'fixed', height: '100vh', left: 0, overflow: 'auto'}">
-            <Menu @on-select="changePage" active-name="1-2" theme="dark" width="auto" :open-names="['1']">
-                <Submenu name="1">
-                    <template slot="title">
-                        <Icon type="ios-navigate"></Icon>
-                       灯饰管理
-                    </template>
-                    <MenuItem name="AddLight">添加灯饰</MenuItem>
-                    <MenuItem name="ControllerLight">Option 2</MenuItem>
-                    <MenuItem name="ControllerUser">Option 3</MenuItem>
-                </Submenu>
-                <Submenu name="2">
-                    <template slot="title">
-                        <Icon type="ios-keypad"></Icon>
-                        账号管理
-                    </template>
-                    <MenuItem name="2-1">Option 1</MenuItem>
-                    <MenuItem name="2-2">Option 2</MenuItem>
-                </Submenu>
-                <Submenu name="3">
-                    <template slot="title">
-                        <Icon type="ios-analytics"></Icon>
-                        订单管理
-                    </template>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
-                </Submenu>
-				<MenuItem name="test">Option 2</MenuItem>
-            </Menu>
-        </Sider>
-        <Layout :style="{marginLeft: '200px'}">
-            <Header :style="{background: '#fff', boxShadow: '0 2px 3px 2px rgba(0,0,0,.1)'}"></Header>
-                <Card>
-					<component :is="currenPage" ></component>
-                </Card>
-            </Content>
-        </Layout>
-    </div>
+	<div  class="layout">
+		<Sider v-if="hasload" :style="{position: 'fixed', height: '100vh', left: 0, overflow: 'auto'}">
+			<MenuItem to="/controller/person" name="header">
+			<div v-if="headload">
+				<Row>
+					<Col span="12">
+					<Picture :myStyle="''" :headertype="1" :type="'user'" :path="userHeader" />
+					</Col>
+					<Col offset="6" span="6">
+					{{userName}}
+					</Col>
+				</Row>
+			</div>
+			</MenuItem>
+			<Menu theme="dark" width="auto">
+				<Submenu v-if="userType==2" name="1">
+					<template slot="title">
+						<Icon type="ios-navigate"></Icon>
+						管理员页面
+					</template>
+					<MenuItem to="/controller/addLight" name="1-1">添加灯饰</MenuItem>
+					<MenuItem to="/controller/addUser" name="1-2">添加用户</MenuItem>
+					<MenuItem to="/controller/controllerOrder" name="1-3">订单管理</MenuItem>
+					<MenuItem to="/controller/controllerUser" name="1-4">用户管理</MenuItem>
+					<MenuItem to="/controller/controllerLight" name="1-5">灯饰管理</MenuItem>
+				</Submenu>
+				<Submenu v-else-if="userType==1" name="2">
+					<template slot="title">
+						<Icon type="ios-keypad"></Icon>
+						雇员页面
+					</template>
+					<MenuItem to="/controller/employeeOrder" name="2-1">雇员订单管理页面</MenuItem>
+				</Submenu>
+			</Menu>
+		</Sider>
+		<Layout :style="{marginLeft: '200px'}">
+			<Header style="background-color: white;"></Header>
+			<keep-alive :exclude="/UnKeep$/">
+				<routerView @tip="tip"></routerView>
+			</keep-alive>
+			</Content>
+		</Layout>
+	</div>
 </template>
 <script>
-	import AddLight from './components/Add-light'
-	import ControllerLight from './components/ControllerLight'
-	import ControllerUser from './components/ControllerUser'
-    export default {
-        data() {
-        	return {
-        		currenPage: "",
-        	}
-        },
-		methods: {
-			changePage(url) {
-				this.currenPage = url
+	import Picture from '@/pages/components/Picture'
+	export default {
+		name: 'Controller',
+		data() {
+			return {
+				userHeader: null,
+				userName: null,
+				headload: false,
+				userType:1,
+				hasload:false
 			}
 		},
 		components: {
-			AddLight,
-			ControllerLight,
-			ControllerUser
+			Picture
 		},
-    }
+		mounted(){
+			this.getUserInfo()
+		},
+		methods: {
+			imageload() {
+				this.userHeader = this.$store.getters.getHeader
+				this.userName = this.$store.getters.getUserName
+				this.userType = this.$store.getters.getType
+				if (this.userType == 0){
+					this.$router.push("/home/light")
+				}
+				this.headload = true
+				this.hasload = true
+			},
+			async getUserInfo() {
+				if (this.$store.getters.getUserName == "") {
+					await this.$axios.get("/user/getUserInfo").then(async (res) => {
+						const data = res.data.datas
+						if (res.data.code == -1) {
+							await this.$store.commit('login', {
+								userName: "",
+								userType: 0,
+								userHeader: "",
+								userId: 0
+							})
+						} else {
+							await this.$store.commit('login', {
+								userName: data.userName,
+								userType: data.userType,
+								userHeader: data.path,
+								userId: data.code
+							})
+
+						}
+						this.imageload()
+					}).catch((err) => {
+						console.log(err)
+					})
+				}else{
+					this.imageload()
+				}
+			},
+			tip(data) {
+				switch (data.type) {
+					case "error":
+						{
+							this.$Notice.error({
+								title: "错误",
+								desc: data.text
+							})
+						};
+						break;
+					case "success":
+						{
+							this.$Notice.success({
+								title: "成功",
+								desc: data.text
+							})
+						};
+						break;
+					case "info":
+						{
+							this.$Notice.info({
+								title: "消息",
+								desc: data.text
+							})
+						};
+						break;
+					case "warning":
+						{
+							this.$Notice.warning({
+								title: "警告",
+								desc: data.text
+							})
+						};
+						break;
+				}
+
+			}
+		},
+	}
 </script>

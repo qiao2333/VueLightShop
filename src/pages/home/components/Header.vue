@@ -14,35 +14,73 @@
 				<Icon type="ios-star-outline" size="24" />收藏夹
 			</MenuItem>
 			<MenuItem name="person">
-				<Avatar icon="ios-person" size="large" src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+				<div v-if="headload">
+					<Row>
+						<Col span="12">
+							<Picture :myStyle="''" :headertype="1" :type="'user'" :path="userHeader"/>
+						</Col>
+						<Col offset="6" span="6">
+							{{userName}}
+						</Col>
+					</Row>
+				</div>
 			</MenuItem>
-
 		</Menu>
 	</div>
 </template>
 <script>
+	import Picture from '@/pages/components/Picture'
 	export default {
+		components: {
+			Picture
+		},
 		data() {
 			return {
-				navlist: [{
-					key: 1,
-					url: "test",
-					name: "测试页面"
-				}, {
-					key:2,
-					url:"light",
-					name:"灯饰页面"
-				},{
-					key:3,
-					url:"buypage",
-					name:"支付页面"
-				}
-				]
+			
+				userHeader:null,
+				userName:null,	
+				headload:false
 			}
+		},
+		mounted() {
+			this.getUserInfo()
 		},
 		methods: {
 			handleSelect(name) {
 				this.$router.push('/home/' + name);
+			},
+			imageload(){
+				this.userHeader = this.$store.getters.getHeader
+				this.userName = this.$store.getters.getUserName
+				console.log(this.userHeader)
+				this.headload=true
+			},
+			async getUserInfo() {
+				if (this.$store.getters.getUserName == "") {
+					await this.$axios.get("/user/getUserInfo").then( async(res) => {
+						const data = res.data.datas
+						if (res.data.code == -1) {
+							await this.$store.commit('login', {
+								userName: "",
+								userType: 0,
+								userHeader: "",
+								userId: 0
+							})
+						} else {
+							await this.$store.commit('login', {
+								userName: data.userName,
+								userType: data.userType,
+								userHeader: data.path,
+								userId: data.code
+							})
+							
+						}
+						this.imageload()
+			
+					}).catch((err) => {
+						console.log(err)
+					})
+				}
 			}
 		},
 	}

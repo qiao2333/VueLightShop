@@ -4,8 +4,7 @@
 		<Scroll :height="500" :on-reach-bottom="handleReachBottom">
 			<Table :loading="loading" :columns="columns1" :data="data1">
 				<template slot-scope="{ row, index }" slot="action">
-					<Button type="primary" size="small" style="margin-right: 5px" @click="update(index,row)">修改</Button>
-					<Button type="error" size="small" @click="handledelete(index,row)">删除</Button>
+					<Button type="primary" size="small" style="margin-right: 5px" @click="post(index,row)">发货</Button>
 				</template>
 				<span slot="total" slot-scope="{ row, index }">{{row.PostFee + row.TotalPrice}}</span>
 				<span slot="status" slot-scope="{ row, index }">{{status[row.Status]}}</span>
@@ -15,7 +14,7 @@
 </template>
 
 <script>
-	import expandRow from './ControllerOrder/expandRow'
+	import expandRow from './employeeOrder/expandRow'
 	export default{
 		components: {
 			expandRow
@@ -83,7 +82,7 @@
 				this.fetch(this.date,this.page)
 			},
 			fetch(value,page){
-				this.$axios.post("/controller/order/search", this.$qs.stringify({
+				this.$axios.post("/employee/order/search", this.$qs.stringify({
 					date:value,
 					page:page
 				})).then((res)=>{
@@ -95,6 +94,19 @@
 				}).catch((err)=>{
 					console.log(err)
 				})
+			},
+			post(index,row){
+				this.$axios.get("/employee/postShip/" + row.Code).then((res)=>{
+					if (res.data.code == 0){
+						this.$emit("tip",{type:"success",text:"发货成功"})
+						this.data1.splice(index,1)
+					}else{
+						this.$emit("tip",{type:"error",text:"发货失败"})
+					}
+				}).cathch((err)=>{
+					this.$emit("tip",{type:"warning",text:"发送未知错误"})
+				})
+				
 			}
 		},
 	}

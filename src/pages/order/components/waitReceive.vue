@@ -4,7 +4,7 @@
 			<Spin />
 		</div>
 		<div v-else >
-			<Scroll :height="1000"  @on-reach-bottom="handleBottom">
+			<Scroll :height="500"  :on-reach-bottom="handleBottom">
 				<Table border ref="selection" :columns="columns" :data="data">
 					<span slot="action" slot-scope="{row, column, index}">
 						<Button type="default" @click="receive(index,row.code)" size="small">收货</Button>

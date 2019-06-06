@@ -1,15 +1,32 @@
 <template>
-	<Spin v-if="hasload==false" />
-	<div v-else>
-		<Row>
-			<Col span="5">
+	<div v-if="hasload">
+		<div style=" text-align: center;padding-top: 30px;">
+			<Carousel autoplay loop>
+				<CarouselItem>
+					<div style="text-align: center;"><img style="height: 450px;width: 100%;" src="../../assets/1.jpg" /></div>
+				</CarouselItem>
+				<CarouselItem>
+					<div style="text-align: center;"><img style="height: 450px;width: 100%;" src="../../assets/2.jpg" /></div>
+				</CarouselItem>
+				<CarouselItem>
+					<div style="text-align: center;"><img style="height: 450px;width: 100%;" src="../../assets/3.jpg" /></div>
+				</CarouselItem>
+				<CarouselItem>
+					<div style="text-align: center;"><img style="height: 450px;width: 100%;" src="../../assets/4.jpg" /></div>
+				</CarouselItem>
+				<CarouselItem>
+					<div style="text-align: center;"><img style="height: 450px;width: 100%;" src="../../assets/5.jpg" /></div>
+				</CarouselItem>
+			</Carousel>
+		</div>
+		<Row type="flex" justify="end">
+			<Col span="4">
 			<Input size="large" @on-search="search" v-model="name" search enter-button placeholder="输入你要搜索的商品" />
 			</Col>
-			<Col>
+			<Col span="2">
 			<Button type="primary" size="large" @click="drawerOpen=true">高级搜索</Button>
 			</Col>
 		</Row>
-
 		<div>
 			<Drawer title="Create" v-model="drawerOpen" width="360" :mask-closable="false">
 				<Form :model="formItem">
@@ -61,9 +78,8 @@
 				</Form>
 			</Drawer>
 		</div>
-		<div>
-			<Spin v-if="searchLoad == false" />
-			<Row v-else justify="center" type="flex" class="code-row-bg">
+		<div v-if="searchLoad">
+			<Row  justify="center" type="flex" class="code-row-bg">
 				<template v-for="(item, index) in light">
 					<Col :key="index" :lg="{ span: 5}">
 					<a :key="index" :href="'/#/home/info/' + item.code">
@@ -79,11 +95,9 @@
 					</Col>
 				</template>
 			</Row>
-			<Row>
-				<template>
-					<Page @on-change="pageChange" :current="current" :total="total" show-elevator />
-				</template>
-			</Row>
+				<div style="text-align: center;">
+					<Page :page-size="12" @on-change="pageChange" :current="current" :total="total" show-elevator />
+				</div>
 
 		</div>
 
@@ -117,13 +131,13 @@
 				selectSearch: null,
 			}
 		},
-		mounted() {
-			this.Fetch()
+		async mounted() {
+			await this.Fetch()
 			this.hasload = true
 		},
 		methods: {
-			Fetch() {
-				this.$axios.get('/controller/light/info').then((res) => {
+			async Fetch() {
+				await this.$axios.get('/controller/light/info').then((res) => {
 					this.selectInfo = res.data
 				}).catch((err) => {
 					console.log(err)
@@ -142,7 +156,7 @@
 				this.$axios.post('/light/searchByName', this.$qs.stringify({
 					name: this.name,
 					page: page,
-					pageCount: 10
+					pageCount: 12
 				})).then(async (res) => {
 					const data = res.data
 					await this.work(data.datas)
@@ -172,7 +186,7 @@
 					order: this.formItem.order,
 					asc: this.formItem.orderSelect,
 					page: page,
-					pageCount: 10
+					pageCount: 12
 				})).then(async(res) => {
 					const data = res.data
 					this.total=data.count

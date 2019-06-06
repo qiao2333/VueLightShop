@@ -5,7 +5,7 @@
 		</div>
 		<div v-else >
 			<Button type="error" @click="deleteOrders">删除</Button>
-			<Scroll :height="1000"  :on-reach-bottom="handleBottom">
+			<Scroll :height="500"  :on-reach-bottom="handleBottom">
 				<Table @on-selection-change="selectionChange" border ref="selection" :columns="columns" :data="data">
 					<span slot="action" slot-scope="{row, column, index}">
 						<Button type="default" @click="deleteOrder(index,row.code)" size="small">删除记录</Button>
